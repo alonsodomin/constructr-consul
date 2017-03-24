@@ -67,22 +67,8 @@ final class ConsulCoordination(
 
   private val logger = system.log
 
-  private val host =
-    system.settings.config.getString("constructr.coordination.host")
-
-  private val port =
-    system.settings.config.getInt("constructr.coordination.port")
-
-  private val agentName =
-    Try(system.settings.config.getString("constructr.consul.agent-name"))
-      .getOrElse("")
-
-  private val https =
-    Try(system.settings.config.getBoolean("constructr.consul.https"))
-      .getOrElse(false)
-
-  private val httpToken =
-    Try(system.settings.config.getString("constructr.consul.http-token")).toOption
+  private val settings = ConsulCoordinationSettings(system)
+  logger.debug("Initializing Consul Coordination using settings: {}", settings)
 
   private val v1Uri = Uri("/v1")
 
@@ -94,10 +80,10 @@ final class ConsulCoordination(
 
   private val nodesUri = baseUri.withPath(baseUri.path / "nodes")
 
-  private val outgoingConnection = if (https) {
-    Http(system).outgoingConnectionHttps(host, port)
+  private val outgoingConnection = if (settings.https) {
+    Http(system).outgoingConnectionHttps(settings.host, settings.port)
   } else {
-    Http(system).outgoingConnection(host, port)
+    Http(system).outgoingConnection(settings.host, settings.port)
   }
 
   override def getNodes() = {
@@ -277,12 +263,12 @@ final class ConsulCoordination(
     }
     val sessionEntity = {
       val base = s"""{"behavior": "delete", "ttl": "${toSeconds(ttl)}s""""
-      val data = if (agentName.isEmpty) {
+      val data = if (settings.agentName.isEmpty) {
         logger.warning(
           "If agent-name is not defined, this may cause problems (see Consul session internals)"
         )
         base + "}"
-      } else base + s""", "node": "$agentName"}"""
+      } else base + s""", "node": "${settings.agentName}"}"""
       HttpEntity(`application/json`, data)
     }
     val createSessionUri = sessionUri.withPath(sessionUri.path / "create")
@@ -300,14 +286,13 @@ final class ConsulCoordination(
   }
 
   private def send(baseRequest: HttpRequest) = {
-    def request: HttpRequest = httpToken.map { token =>
+    def request: HttpRequest = settings.httpToken.map { token =>
       val newHeaders = HttpHeaders.ConsulToken(token) +: baseRequest.headers
       baseRequest.copy(headers = newHeaders)
     } getOrElse baseRequest
 
     Source
       .single(request)
-      .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .log("constructr-coordination-consul-requests")
       .via(outgoingConnection)
       .log("constructr-coordination-consul-responses")
