@@ -86,6 +86,9 @@ final class ConsulCoordination(
     Try(system.settings.config.getBoolean("constructr.consul.https"))
       .getOrElse(false)
 
+  private val httpToken =
+    Try(system.settings.config.getString("constructr.consul.http-token")).toOption
+
   private val v1Uri = Uri("/v1")
 
   private val kvUri = v1Uri.withPath(v1Uri.path / "kv")
@@ -301,13 +304,19 @@ final class ConsulCoordination(
     parse(s).fold(throw _, identity).as[Set[Json]].getOrElse(Set.empty).map(f)
   }
 
-  private def send(request: HttpRequest) =
+  private def send(baseRequest: HttpRequest) = {
+    def request: HttpRequest = httpToken.map { token =>
+      val newHeaders = HttpHeaders.ConsulToken(token) +: baseRequest.headers
+      baseRequest.copy(headers = newHeaders)
+    } getOrElse baseRequest
+
     Source
       .single(request)
       .log("constructr-coordination-consul-requests")
       .via(outgoingConnection)
       .log("constructr-coordination-consul-responses")
       .runWith(Sink.head)
+  }
 
   private def ignore(entity: ResponseEntity) =
     entity.dataBytes.runWith(Sink.ignore)
