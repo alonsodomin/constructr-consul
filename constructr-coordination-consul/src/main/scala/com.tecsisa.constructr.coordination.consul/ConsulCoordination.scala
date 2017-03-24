@@ -19,30 +19,25 @@ package consul
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Base64
-import java.util.Base64.{ getUrlDecoder, getUrlEncoder }
+import java.util.Base64.{getUrlDecoder, getUrlEncoder}
+
 import akka.Done
-import akka.actor.{ ActorSystem, Address, AddressFromURIString }
+import akka.actor.{ActorSystem, Address, AddressFromURIString}
+import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding.{ Get, Put }
+import akka.http.scaladsl.client.RequestBuilding.{Get, Put}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
-import akka.http.scaladsl.model.StatusCodes.{ NotFound, OK }
-import akka.http.scaladsl.model.{
-  HttpEntity,
-  HttpRequest,
-  HttpResponse,
-  RequestEntity,
-  ResponseEntity,
-  StatusCode,
-  Uri
-}
+import akka.http.scaladsl.model.StatusCodes.{NotFound, OK}
+import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, RequestEntity, ResponseEntity, StatusCode, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.{ActorMaterializer, Attributes}
+import akka.stream.scaladsl.{Sink, Source}
 import io.circe.Json
 import io.circe.parser.parse
 import de.heikoseeberger.constructr.coordination.Coordination
+
 import scala.concurrent.Future
-import scala.concurrent.duration.{ Duration, FiniteDuration }
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.Try
 
 object ConsulCoordination {
@@ -312,6 +307,7 @@ final class ConsulCoordination(
 
     Source
       .single(request)
+      .withAttributes(Attributes.logLevels(onElement = Logging.InfoLevel))
       .log("constructr-coordination-consul-requests")
       .via(outgoingConnection)
       .log("constructr-coordination-consul-responses")
