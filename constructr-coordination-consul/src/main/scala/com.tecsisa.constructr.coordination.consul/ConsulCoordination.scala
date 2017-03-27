@@ -68,7 +68,7 @@ final class ConsulCoordination(
   private val logger = system.log
 
   private val settings = ConsulCoordinationSettings(system)
-  logger.debug("Initializing Consul Coordination using settings: {}", settings)
+  logger.info("Initializing Consul Coordination using settings: {}", settings)
 
   private val v1Uri = Uri("/v1")
 
