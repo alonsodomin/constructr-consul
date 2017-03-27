@@ -23,7 +23,7 @@ import scala.util.Try
 /**
   * Created by domingueza on 24/03/2017.
   */
-case class ConsulCoordinationSettings(
+final case class ConsulCoordinationSettings(
   host: String,
   port: Int,
   agentName: String,

@@ -23,17 +23,19 @@ import java.util.Base64.{getUrlDecoder, getUrlEncoder}
 
 import akka.Done
 import akka.actor.{ActorSystem, Address, AddressFromURIString}
-import akka.event.Logging
+import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Put}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.{NotFound, OK}
 import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, RequestEntity, ResponseEntity, StatusCode, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.{ActorMaterializer, Attributes}
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+
 import io.circe.Json
 import io.circe.parser.parse
+
 import de.heikoseeberger.constructr.coordination.Coordination
 
 import scala.concurrent.Future
@@ -65,7 +67,7 @@ final class ConsulCoordination(
 
   @volatile var stateSession: Option[SessionId] = None
 
-  private val logger = system.log
+  implicit val logger: LoggingAdapter = Logging.getLogger(system, this)
 
   private val settings = ConsulCoordinationSettings(system)
   logger.info("Initializing Consul Coordination using settings: {}", settings)
@@ -287,7 +289,7 @@ final class ConsulCoordination(
 
   private def send(baseRequest: HttpRequest) = {
     def request: HttpRequest = settings.httpToken.map { token =>
-      val newHeaders = HttpHeaders.ConsulToken(token) +: baseRequest.headers
+      val newHeaders = baseRequest.headers :+ HttpHeaders.ConsulToken(token)
       baseRequest.copy(headers = newHeaders)
     } getOrElse baseRequest
 
