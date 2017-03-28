@@ -70,7 +70,7 @@ final class ConsulCoordination(
   implicit val logger: LoggingAdapter = Logging.getLogger(system, this)
 
   private val settings = ConsulCoordinationSettings(system)
-  logger.info("Initializing Consul Coordination using settings: {}", settings)
+  logger.debug("Initializing Consul Coordination using settings: {}", settings)
 
   private val v1Uri = Uri("/v1")
 
