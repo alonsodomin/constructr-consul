@@ -23,7 +23,7 @@ import scala.util.Try
 /**
   * Created by domingueza on 24/03/2017.
   */
-final case class ConsulCoordinationSettings(
+private[consul] final case class ConsulCoordinationSettings(
   host: String,
   port: Int,
   agentName: String,
@@ -31,7 +31,7 @@ final case class ConsulCoordinationSettings(
   httpToken: Option[String] = None
 )
 
-object ConsulCoordinationSettings {
+private[consul] object ConsulCoordinationSettings {
 
   def apply(actorSystem: ActorSystem): ConsulCoordinationSettings = {
     val config = actorSystem.settings.config

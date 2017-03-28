@@ -23,7 +23,7 @@ import scala.util.{Success, Try}
 /**
   * Created by domingueza on 24/03/2017.
   */
-object HttpHeaders {
+private[consul] object HttpHeaders {
 
   final case class ConsulToken(value: String) extends ModeledCustomHeader[ConsulToken] {
     override def companion: ModeledCustomHeaderCompanion[ConsulToken] = ConsulToken
