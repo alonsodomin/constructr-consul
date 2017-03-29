@@ -28,7 +28,15 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding.{Get, Put}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.{NotFound, OK}
-import akka.http.scaladsl.model.{HttpEntity, HttpRequest, HttpResponse, RequestEntity, ResponseEntity, StatusCode, Uri}
+import akka.http.scaladsl.model.{
+  HttpEntity,
+  HttpRequest,
+  HttpResponse,
+  RequestEntity,
+  ResponseEntity,
+  StatusCode,
+  Uri
+}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
@@ -40,7 +48,6 @@ import de.heikoseeberger.constructr.coordination.Coordination
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, FiniteDuration}
-import scala.util.Try
 
 object ConsulCoordination {
 
@@ -288,7 +295,7 @@ final class ConsulCoordination(
   }
 
   private def send(baseRequest: HttpRequest) = {
-    def request: HttpRequest = settings.httpToken.map { token =>
+    def request: HttpRequest = settings.accessToken.map { token =>
       val newHeaders = baseRequest.headers :+ HttpHeaders.ConsulToken(token)
       baseRequest.copy(headers = newHeaders)
     } getOrElse baseRequest

@@ -28,7 +28,7 @@ private[consul] final case class ConsulCoordinationSettings(
   port: Int,
   agentName: String,
   https: Boolean = false,
-  httpToken: Option[String] = None
+  accessToken: Option[String] = None
 )
 
 private[consul] object ConsulCoordinationSettings {
@@ -41,9 +41,9 @@ private[consul] object ConsulCoordinationSettings {
       .getOrElse("")
     val https = Try(config.getBoolean("constructr.consul.https"))
       .getOrElse(false)
-    val httpToken = Try(config.getString("constructr.consul.http-token")).toOption
+    val accessToken = Try(config.getString("constructr.consul.access-token")).toOption
 
-    ConsulCoordinationSettings(host, port, agentName, https, httpToken)
+    ConsulCoordinationSettings(host, port, agentName, https, accessToken)
   }
 
 }
